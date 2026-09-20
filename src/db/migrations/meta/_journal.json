@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1789855016302,
+      "tag": "0000_sparkling_jamie_braddock",
+      "breakpoints": true
+    }
+  ]
+}
