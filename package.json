@@ -27,7 +27,13 @@
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^22.0.0",
     "drizzle-kit": "^0.31.10",
+    "esbuild": "^0.28.2",
     "typescript": "^5.8.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outdir=dist --packages=external --jsx-import-source=hono/jsx --jsx=automatic"
+  }
 }
+
