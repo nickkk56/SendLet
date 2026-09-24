@@ -1,131 +1,166 @@
-# Sendlet — User Guide
+# Sendlet
 
-Sendlet is a lightweight, self-hosted mailing list tool. Use it to collect email subscribers from a public form and send broadcast emails. It features double opt-in confirmation, easy unsubscribe management, and a simple dashboard.
+A lightweight, self-hosted mailing list tool. Collect email subscribers via a public form and send broadcast emails with double opt-in, easy unsubscribe management, and a simple dashboard.
+
+## Features
+
+- **Double opt-in** — subscribers confirm via email before being active
+- **Easy unsubscribe** — every broadcast includes a unique unsubscribe link
+- **Subscriber dashboard** — manage subscribers, view stats, send broadcasts
+- **Email provider support** — Resend or SMTP (Gmail, Mailgun, Postmark, etc.)
+- **SQLite backend** — zero-dependency database, single file
+- **Source tracking** — track where subscribers come from
+- **Docker ready** — production Dockerfile included, migrations run automatically
+
+## Tech Stack
+
+- [Hono](https://hono.dev/) — web framework
+- [Drizzle ORM](https://orm.drizzle.team/) — database ORM
+- [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) — SQLite driver
+- [esbuild](https://esbuild.github.io/) — bundler
+- [TypeScript](https://www.typescriptlang.org/) — type safety
 
 ## Quick Start
 
-### 1. Install dependencies
+### Local Development
+
 ```bash
+# 1. Install dependencies
 npm install
-```
 
-### 2. Configure environment
-Copy the example environment file and edit it:
-```bash
+# 2. Configure environment
 cp .env.example .env
-```
-Edit `.env` and set up your preferred settings such as:
-```
-DASHBOARD_PASSWORD=your-secret-password
-EMAIL_FROM=noreply@yourdomain.com   # Sender address for broadcasts
-BASE_URL=http://localhost:3000      # Must match your deployment URL
-PORT=3000                           # Server port
-DATABASE_PATH=./data/subscribers.db # SQLite file location
-```
+# Edit .env with your settings (see Environment Variables below)
 
-### 3. Run database migration
-```bash
+# 3. Run database migrations
 npm run db:migrate
-```
 
-### 4. Start the server
-Development (with hot-reload):
-```bash
+# 4. Start dev server (hot-reload)
 npm run dev
 ```
-Production:
+
+The server will start at `http://localhost:3000`.
+
+### Production (Node.js)
+
 ```bash
 npm run build
 npm start
 ```
 
-The server will start at `http://localhost:3000` (or your configured port).
+### Production (Docker)
 
-## Using the Subscribe Form
+```bash
+# Build the image
+docker build -t sendlet .
 
-### From an external website
-Embed a form on your site that POSTs to your Sendlet instance:
+# Run the container
+docker run -d \
+  -p 3001:3001 \
+  --env-file .env \
+  -v ./data:/app/data \
+  --name sendlet \
+  sendlet
+```
+
+The Docker container automatically runs migrations on startup before starting the server.
+
+> **Note:** Use `docker-compose.yml` for local development or if you want a persistent database volume with auto-restart.
+
+### Docker Compose (Optional)
+
+```bash
+docker compose up -d
+```
+
+## Embedding the Subscribe Form
+
+Add this form to any page on your website:
 
 ```html
-<form id="Sendlet-form" action="https://your-sendlet-url.com/subscribe" method="POST">
+<form action="https://your-sendlet-url.com/subscribe" method="POST">
   <input type="email" name="email" placeholder="Your email" required />
   <input type="hidden" name="source" value="your-site" />
   <button type="submit">Subscribe</button>
 </form>
 ```
 
-The `source` field is optional but useful for tracking where subscribers come from.
+The `source` field is optional and helps you track where subscribers come from.
 
-### Subscribe flow
-1. Visitor enters email and submits the form.
-2. Sendlet creates a subscriber record and sends a confirmation email.
-3. Visitor clicks the link in the email to confirm.
-4. Subscriber is now confirmed and will receive broadcasts.
+### Subscribe Flow
+
+1. Visitor enters email and submits the form
+2. Sendlet creates a subscriber record and sends a confirmation email
+3. Visitor clicks the confirmation link
+4. Subscriber is confirmed and will receive broadcasts
 
 ## Dashboard
 
-Access the dashboard at: `http://your-url/dashboard`
+Access at: `http://your-url/dashboard`
 
-You will be prompted to enter the `DASHBOARD_PASSWORD` you configured.
+You'll be prompted for the `DASHBOARD_PASSWORD` you configured.
 
-### Dashboard features
+### Features
 
-**Stats cards** — See at a glance:
-- **Total**: All subscribers
-- **Confirmed**: Subscribers who verified their email and haven't unsubscribed
-- **Unsubscribed**: Subscribers who opted out
+- **Stats cards** — Total, Confirmed, and Unsubscribed subscriber counts
+- **Subscribers table** — View all subscribers with email, date, status, and source
+- **Send Broadcast** — Compose and send HTML email to all confirmed subscribers
 
-**Subscribers table** — View all subscribers with their email, subscription date, status (Confirmed / Unconfirmed / Unsubscribed), and source.
+Each broadcast automatically includes a unique unsubscribe link per recipient.
 
-**Send Broadcast** — Compose and send email to all confirmed subscribers:
-1. Enter a subject line
-2. Enter the body (HTML is supported)
-3. Click **Send**
-4. The result shows how many emails were sent successfully and how many failed
+## Environment Variables
 
-Each broadcast email automatically includes a unique unsubscribe link for each recipient.
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `PORT` | No | `3000` | Server port |
+| `DATABASE_PATH` | No | `./data/subscribers.db` | SQLite database file path |
+| `BASE_URL` | Yes | — | Public URL of your Sendlet instance (used for confirm/unsubscribe links) |
+| `EMAIL_FROM` | Yes | — | Sender email address for broadcasts |
+| `EMAIL_PROVIDER` | Yes | — | Email provider: `resend` or `smtp` |
+| `RESEND_API_KEY` | If resend | — | Resend API key |
+| `SMTP_HOST` | If smtp | — | SMTP server hostname |
+| `SMTP_PORT` | If smtp | `587` | SMTP server port |
+| `SMTP_USER` | If smtp | — | SMTP username |
+| `SMTP_PASS` | If smtp | — | SMTP password or app password |
+| `SMTP_SECURE` | If smtp | `false` | Use SSL/TLS for SMTP |
+| `DASHBOARD_PASSWORD` | Yes | — | Password for dashboard access |
+| `BRAND_NAME` | No | `Sendlet` | Brand name shown in UI and emails |
 
 ## API Reference
-
-Sendlet exposes a simple HTTP API.
 
 ### POST /subscribe
 Subscribe an email address.
 
-**Request body (JSON):**
+**Request (JSON):**
 ```json
 {
-  "email" : "user@example.com",
+  "email": "user@example.com",
   "source": "website"
 }
 ```
 
-**Response:**
+**Responses:**
 - `201` — `{ "message": "Check your email to confirm." }`
-- `400` — `{ "error": "Invalid email address" }`
-- `409` — `{ "error": "This email has unsubscribed." }` (if email previously unsubscribed)
+- `400` — Invalid email
+- `409` — Email previously unsubscribed
 
 ### GET /confirm/:token
-Confirm a subscription using the token from the confirmation email.
-
-**Response:** HTML confirmation page
+Confirm a subscription.
 
 ### GET /unsubscribe/:token
-Unsubscribe using the token from an email's unsubscribe link.
-
-**Response:** HTML unsubscribe confirmation page
+Unsubscribe using the link from a broadcast email.
 
 ### GET /dashboard
-Dashboard page (requires auth).
+Dashboard page. Requires authentication.
 
-**Authentication:** Either a Bearer token or password query parameter:
+**Auth:** Bearer token or query param:
 - Header: `Authorization: Bearer your-password`
 - Query: `?password=your-password`
 
 ### POST /dashboard/send
-Send a broadcast email to all confirmed subscribers (requires auth).
+Send a broadcast to all confirmed subscribers.
 
-**Request body (JSON):**
+**Request (JSON):**
 ```json
 {
   "subject": "Your newsletter",
@@ -143,87 +178,42 @@ Send a broadcast email to all confirmed subscribers (requires auth).
 ```
 
 ### GET /dashboard/subscribers
-Get all subscribers as JSON (requires auth).
+Get all subscribers as JSON.
 
-**Response:** Array of subscriber objects:
-```json
-[
-  {
-    "id": 1,
-    "email": "user@example.com",
-    "confirmed": true,
-    "confirmToken": null,
-    "unsubscribeToken": "abc123...",
-    "subscribedAt": "2026-01-15T10:30:00.000Z",
-    "confirmedAt": "2026-01-15T10:35:00.000Z",
-    "unsubscribedAt": null,
-    "source": "website"
-  }
-]
-```
+## Reverse Proxy
 
-## Resend Email Setup
+For production, put Sendlet behind a reverse proxy with SSL. Example Nginx config:
 
-Sendlet uses [Resend](https://resend.com) for sending emails.
-
-1. Create a free account at https://resend.com
-2. Verify your domain
-3. Generate an API key under "API Keys"
-4. Set `RESEND_API_KEY` in your `.env` file
-
-**Mock mode:** If `RESEND_API_KEY` is not set, Sendlet logs emails to the console instead of sending them. This is useful for local development without an email provider.
-
-## Production Deployment
-
-### Docker
-Create a simple Dockerfile:
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY dist/ ./dist/
-EXPOSE 3000
-CMD ["node", "dist/index.js"]
-```
-
-### Reverse proxy
-For production, put Sendlet behind a reverse proxy (Nginx, Caddy, etc.) with SSL:
-
-Example Nginx config:
 ```nginx
 server {
     listen 443 ssl;
     server_name newsletter.yourdomain.com;
 
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://localhost:3001;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
 }
 ```
 
-Remember to set `BASE_URL=https://newsletter.yourdomain.com` so confirmation and unsubscribe links in emails point to the correct URL.
+Set `BASE_URL=https://newsletter.yourdomain.com` so confirmation links in emails are correct.
 
 ## Troubleshooting
 
 ### "Environment validation failed" on startup
-Check your `.env` file. At minimum, `DASHBOARD_PASSWORD` must be set and non-empty.
+Check your `.env` file. At minimum, `DASHBOARD_PASSWORD`, `EMAIL_FROM`, `EMAIL_PROVIDER`, and `BASE_URL` must be set.
 
 ### Emails not being sent
-- Verify `RESEND_API_KEY` is set correctly
-- Check the server console for error messages
-- Verify your domain is verified in Resend
-- Ensure `EMAIL_FROM` is a valid address on your verified domain
+- Verify `RESEND_API_KEY` or SMTP credentials are correct
+- Check server console for errors
+- Ensure your domain is verified (Resend) or SMTP is configured correctly
 
 ### Confirmation links don't work
-- Ensure `BASE_URL` matches the actual URL users access your app at
+- `BASE_URL` must match the actual URL users access
 - If using HTTPS, `BASE_URL` must also use HTTPS
-- If behind a reverse proxy, make sure it's properly configured
 
-### Better-sqlite3 build errors
-The `better-sqlite3` package requires native compilation. If you encounter build errors:
+### better-sqlite3 build errors
 ```bash
 npm rebuild better-sqlite3
 ```
@@ -233,20 +223,20 @@ npm rebuild better-sqlite3
 ```
 src/
 ├── index.ts              # Entry point
-├── config.ts             # Environment variable validation
+├── config.ts             # Environment validation
 ├── db/
-│   ├── schema.ts         # Database schema (subscribers table)
+│   ├── schema.ts         # Database schema
 │   ├── client.ts         # SQLite connection
 │   └── migrations/       # Drizzle migrations
 ├── routes/
-│   ├── public.ts         # Public routes (/subscribe, /confirm, /unsubscribe)
-│   └── dashboard.ts      # Dashboard routes (protected)
+│   ├── public.ts         # Public routes
+│   └── dashboard.ts      # Protected dashboard routes
 ├── services/
-│   ├── email.ts          # Resend email integration
-│   └── tokens.ts         # Cryptographic token generation
+│   ├── email.ts          # Email sending (Resend/SMTP)
+│   └── tokens.ts         # Token generation
 ├── middleware/
 │   └── auth.ts           # Dashboard authentication
-└── views/                # Server-rendered HTML templates
+└── views/                # Server-rendered HTML (Hono JSX)
     ├── Dashboard.tsx
     ├── Login.tsx
     ├── ConfirmedPage.tsx
@@ -258,4 +248,4 @@ src/
 
 ## License
 
-MIT License — see `package.json` for details.
+MIT
