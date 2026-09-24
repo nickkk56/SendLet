@@ -1,8 +1,8 @@
 import { Resend } from "resend";
-import nodemailer from "nodemailer";
-import { ConfirmEmail } from "../views/emails/ConfirmEmail";
-import { BroadcastEmail } from "../views/emails/BroadcastEmail";
-import { config } from "../config";
+import * as nodemailer from "nodemailer";
+import { ConfirmEmail } from "../views/emails/ConfirmEmail.js";
+import { BroadcastEmail } from "../views/emails/BroadcastEmail.js";
+import { config } from "../config.js";
 
 // Hono html templates are objects with a toString() method that returns the HTML string
 type HonoTemplate = { toString(): string };

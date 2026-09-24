@@ -14,13 +14,9 @@ Copy the example environment file and edit it:
 ```bash
 cp .env.example .env
 ```
-Edit `.env` and set at minimum:
+Edit `.env` and set up your pereferred settings such as:
 ```
 DASHBOARD_PASSWORD=your-secret-password
-```
-Optional settings:
-```
-RESEND_API_KEY=re_your_api_key      # Without this, emails are mocked (logged to console)
 EMAIL_FROM=noreply@yourdomain.com   # Sender address for broadcasts
 BASE_URL=http://localhost:3000      # Must match your deployment URL
 PORT=3000                           # Server port

@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.0",
-    "@types/nodemailer": "^8.0.2",
     "better-sqlite3": "^11.10.0",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.45.2",

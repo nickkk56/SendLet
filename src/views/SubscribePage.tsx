@@ -1,13 +1,13 @@
 import { html } from "hono/html";
 import { config } from "../config";
 
-export function ConfirmedPage() {
+export function SubscribePage() {
   return html`
     <html lang="en">
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>You're confirmed! — ${config.BRAND_NAME}</title>
+        <title>Check your email — ${config.BRAND_NAME}</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
         <style>
           :root {
@@ -43,7 +43,7 @@ export function ConfirmedPage() {
           .icon {
             width: 64px;
             height: 64px;
-            background: rgba(34, 197, 94, 0.12);
+            background: rgba(232, 121, 47, 0.12);
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
@@ -51,10 +51,8 @@ export function ConfirmedPage() {
             margin-bottom: 24px;
           }
           .icon::after {
-            content: "✓";
-            font-size: 1.5rem;
-            color: #22c55e;
-            font-weight: 600;
+            content: "📧";
+            font-size: 1.75rem;
           }
           h1 {
             font-size: 1.5rem;
@@ -68,13 +66,20 @@ export function ConfirmedPage() {
             color: var(--text-secondary);
             line-height: 1.6;
           }
+          a {
+            font-size: 1rem;
+            color: var(--accent-color);
+            line-height: 1.6;
+            text-decoration: none;
+          }
         </style>
       </head>
       <body>
         <div class="card">
           <div class="icon"></div>
-          <h1>You're confirmed!</h1>
-          <p>Welcome aboard. We'll send you updates when there's something worth knowing.</p>
+          <h1>Check your email</h1>
+          <p style="padding-bottom: 12px">We've sent you a confirmation link. Click it to complete your subscription.</p>
+          <a href="https://nikitaskrebnyov.com/index.html">Go Back to website</a>
         </div>
       </body>
     </html>

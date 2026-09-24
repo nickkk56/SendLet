@@ -1,12 +1,12 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { db, schema } from "../db/client";
+import { db, schema } from "../db/client.js";
 import { eq, and, isNull } from "drizzle-orm";
-import { dashboardAuth } from "../middleware/auth";
-import { Dashboard } from "../views/Dashboard";
-import { LoginPage } from "../views/Login";
-import { sendBroadcastEmail } from "../services/email";
-import { config } from "../config";
+import { dashboardAuth } from "../middleware/auth.js";
+import { Dashboard } from "../views/Dashboard.js";
+import { LoginPage } from "../views/Login.js";
+import { sendBroadcastEmail } from "../services/email.js";
+import { config } from "../config.js";
 
 const { subscribers } = schema;
 
@@ -127,6 +127,64 @@ dashboardRoutes.delete("/subscribers/:id", async (c) => {
     console.error("Database error deleting subscriber:", err);
     return c.json({ error: "Internal server error" }, 500);
   }
+});
+
+// GET /dashboard/subscribers/export/csv — export all subscribers as CSV
+dashboardRoutes.get("/subscribers/export/csv", async (c) => {
+  let all;
+  try {
+    all = await db
+      .select()
+      .from(subscribers)
+      .orderBy(subscribers.subscribedAt)
+      .all();
+  } catch (err) {
+    console.error("Database error exporting subscribers:", err);
+    return c.text("Internal server error", 500);
+  }
+
+  const headers = ["email", "subscribed_at", "confirmed_at", "source"];
+  const rows = all.map((s) => [
+    s.email,
+    s.subscribedAt.toISOString(),
+    s.confirmedAt ? s.confirmedAt.toISOString() : "",
+    s.source ?? "",
+  ]);
+
+  const csvLines = [headers.join(","), ...rows.map((r) => r.join(","))];
+  const csv = csvLines.join("\n");
+
+  return c.body(csv, 200, {
+    "Content-Type": "text/csv",
+    "Content-Disposition": 'attachment; filename="subscribers.csv"',
+  });
+});
+
+// GET /dashboard/subscribers/export/json — export all subscribers as JSON
+dashboardRoutes.get("/subscribers/export/json", async (c) => {
+  let all;
+  try {
+    all = await db
+      .select()
+      .from(subscribers)
+      .orderBy(subscribers.subscribedAt)
+      .all();
+  } catch (err) {
+    console.error("Database error exporting subscribers:", err);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+
+  const data = all.map((s) => ({
+    email: s.email,
+    subscribedAt: s.subscribedAt.toISOString(),
+    confirmedAt: s.confirmedAt ? s.confirmedAt.toISOString() : null,
+    source: s.source ?? null,
+  }));
+
+  return c.body(JSON.stringify(data, null, 2), 200, {
+    "Content-Type": "application/json",
+    "Content-Disposition": 'attachment; filename="subscribers.json"',
+  });
 });
 
 // GET /dashboard/subscribers — JSON list of subscribers (for API consumers)

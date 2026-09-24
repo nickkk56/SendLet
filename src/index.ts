@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
-import { config } from "./config";
-import { publicRoutes } from "./routes/public";
-import { dashboardRoutes } from "./routes/dashboard";
+import { config } from "./config.js";
+import { publicRoutes } from "./routes/public.js";
+import { dashboardRoutes } from "./routes/dashboard.js";
 
 const app = new Hono();
 

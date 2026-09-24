@@ -2,6 +2,8 @@ import { z } from "zod";
 import "dotenv/config";
 
 const envSchema = z.object({
+  // Brand name shown in UI and emails
+  BRAND_NAME: z.string().default("Sendlet"),
   // Email provider: resend, smtp, or file
   EMAIL_PROVIDER: z.enum(["resend", "smtp", "file"]).default("resend"),
   // Resend settings

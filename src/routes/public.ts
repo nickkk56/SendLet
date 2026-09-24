@@ -1,13 +1,14 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { db, schema } from "../db/client";
+import { db, schema } from "../db/client.js";
 import { eq } from "drizzle-orm";
-import { generateToken } from "../services/tokens";
-import { sendConfirmationEmail } from "../services/email";
-import { config } from "../config";
-import { ConfirmedPage } from "../views/ConfirmedPage";
-import { UnsubscribedPage } from "../views/UnsubscribedPage";
-import { rateLimit } from "../middleware/rate-limit";
+import { generateToken } from "../services/tokens.js";
+import { sendConfirmationEmail } from "../services/email.js";
+import { config } from "../config.js";
+import { ConfirmedPage } from "../views/ConfirmedPage.js";
+import { UnsubscribedPage } from "../views/UnsubscribedPage.js";
+import { SubscribePage } from "../views/SubscribePage.js";
+import { rateLimit } from "../middleware/rate-limit.js";
 
 const { subscribers } = schema;
 
@@ -27,52 +28,97 @@ publicRoutes.get("/", (c) => {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Sendlet</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
       <style>
+        :root {
+          --bg-color: #f5f5f7;
+          --surface-color: #ffffff;
+          --text-main: #1d1d1f;
+          --text-secondary: #6e6e73;
+          --accent-color: #E8792F;
+          --accent-hover: #d26a24;
+          --border-color: rgba(0, 0, 0, 0.08);
+          --border-radius: 16px;
+          --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: #f8fafc;
+          font-family: var(--font-family);
+          background: var(--bg-color);
           display: flex;
           align-items: center;
           justify-content: center;
           min-height: 100vh;
-          color: #334155;
+          color: var(--text-main);
+          -webkit-font-smoothing: antialiased;
         }
         .container {
           text-align: center;
-          max-width: 400px;
-          padding: 2rem;
+          max-width: 440px;
+          padding: 48px 40px;
+          background: var(--surface-color);
+          border-radius: var(--border-radius);
+          border: 1px solid var(--border-color);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+          margin: 0 24px;
+        }
+        .subtitle {
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          color: var(--accent-color);
+          font-weight: 600;
+          display: block;
+          margin-bottom: 12px;
         }
         h1 {
           font-size: 2rem;
-          margin-bottom: 0.5rem;
-          color: #0f172a;
+          font-weight: 600;
+          line-height: 1.12;
+          letter-spacing: -0.02em;
+          margin-bottom: 12px;
         }
         p {
-          color: #64748b;
-          margin-bottom: 1.5rem;
+          color: var(--text-secondary);
+          margin-bottom: 32px;
+          font-size: 0.95rem;
+          line-height: 1.6;
         }
-        a {
+        .btn {
           display: inline-block;
-          background: #2563eb;
+          background: var(--accent-color);
           color: white;
-          padding: 0.75rem 1.5rem;
-          border-radius: 8px;
+          padding: 14px 30px;
+          border-radius: 980px;
           text-decoration: none;
-          font-weight: 500;
+          font-weight: 600;
+          font-size: 0.95rem;
+          letter-spacing: 0.01em;
+          transition: background 0.2s ease, transform 0.2s ease;
         }
-        a:hover { background: #1d4ed8; }
+        .btn:hover {
+          background: var(--accent-hover);
+          transform: scale(1.02);
+        }
       </style>
     </head>
     <body>
       <div class="container">
+        <span class="subtitle">Self-hosted</span>
         <h1>📬 Sendlet</h1>
-        <p>Self-hosted mailing list service</p>
-        <a href="/dashboard/login">Go to Dashboard</a>
+        <p>Your mailing list service. Embed the subscribe form on your site and manage subscribers here.</p>
+        <a href="/dashboard/login" class="btn">Go to Dashboard</a>
       </div>
     </body>
     </html>
   `);
+});
+
+// GET /subscribe — confirmation page shown after subscribing
+publicRoutes.get("/subscribe", (c) => {
+  return c.html(SubscribePage());
 });
 
 // POST /subscribe
@@ -143,7 +189,7 @@ publicRoutes.post("/subscribe", rateLimit(10), async (c) => {
     console.error("Failed to send confirmation email:", err);
   });
 
-  return c.json({ message: "Check your email to confirm." }, 201);
+  return c.redirect("/subscribe", 303);
 });
 
 // GET /confirm/:token

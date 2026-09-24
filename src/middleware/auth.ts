@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from "hono";
-import { config } from "../config";
+import { config } from "../config.js";
 
 export const dashboardAuth: MiddlewareHandler = async (c, next) => {
   const authHeader = c.req.header("authorization");
