@@ -13,6 +13,7 @@ RUN npm ci
 COPY tsconfig.json drizzle.config.ts ./
 COPY src/ ./src/
 RUN npm run build
+RUN mkdir -p /app/data
 
 # Copy public assets
 COPY public/ ./public/
