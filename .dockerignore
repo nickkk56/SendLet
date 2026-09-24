@@ -6,4 +6,4 @@ dist
 *.cnf
 test-*.js
 test-*.ts
-usage.md
+Readme.md

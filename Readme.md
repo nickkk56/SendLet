@@ -62,8 +62,6 @@ The `source` field is optional but useful for tracking where subscribers come fr
 3. Visitor clicks the link in the email to confirm.
 4. Subscriber is now confirmed and will receive broadcasts.
 
-**Note:** Without `RESEND_API_KEY` set, Sendlet runs in mock mode. Confirmation emails are logged to the console instead of sent. Use this for local development.
-
 ## Dashboard
 
 Access the dashboard at: `http://your-url/dashboard`
