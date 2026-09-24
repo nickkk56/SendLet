@@ -14,7 +14,7 @@ Copy the example environment file and edit it:
 ```bash
 cp .env.example .env
 ```
-Edit `.env` and set up your pereferred settings such as:
+Edit `.env` and set up your preferred settings such as:
 ```
 DASHBOARD_PASSWORD=your-secret-password
 EMAIL_FROM=noreply@yourdomain.com   # Sender address for broadcasts
@@ -47,7 +47,7 @@ The server will start at `http://localhost:3000` (or your configured port).
 Embed a form on your site that POSTs to your Sendlet instance:
 
 ```html
-<form id="sendlet-form" action="https://your-sendlet-url.com/subscribe" method="POST">
+<form id="Sendlet-form" action="https://your-sendlet-url.com/subscribe" method="POST">
   <input type="email" name="email" placeholder="Your email" required />
   <input type="hidden" name="source" value="your-site" />
   <button type="submit">Subscribe</button>
@@ -77,7 +77,7 @@ You will be prompted to enter the `DASHBOARD_PASSWORD` you configured.
 
 **Subscribers table** — View all subscribers with their email, subscription date, status (Confirmed / Unconfirmed / Unsubscribed), and source.
 
-**Send Broadcast** — Compose and send an email to all confirmed subscribers:
+**Send Broadcast** — Compose and send email to all confirmed subscribers:
 1. Enter a subject line
 2. Enter the body (HTML is supported)
 3. Click **Send**
@@ -95,8 +95,8 @@ Subscribe an email address.
 **Request body (JSON):**
 ```json
 {
-  "email": "user@example.com",
-  "source": "website"  // optional
+  "email" : "user@example.com",
+  "source": "website"
 }
 ```
 
